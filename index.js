@@ -2,7 +2,7 @@ const express = require('express')
 const multer  = require('multer')
 const uploadCheck = require('./handlers/uploadCheck')
 const uploadProgress = require('./handlers/uploadProgress')
-const savingCheck = require('./handlers/savingCheck')
+const getUploadObj = require('./handlers/getUploadObj')
 const { sendViaFTP } = require('./utils/downloadhost')
 const Manager = require('./utils/Manager')
 const moveToFtp = require('./handlers/moveToFtp')
@@ -23,7 +23,7 @@ app.post('/upload_progress', upload.single('mfile'), uploadProgress);
 
 app.post('/moveToFtp', moveToFtp);
 
-app.post('/saving_check', savingCheck);
+app.post('/getUploadObj', getUploadObj);
 
 
 

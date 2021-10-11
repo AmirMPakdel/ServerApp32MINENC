@@ -24,7 +24,7 @@ Manager.init = function(){
 
 Manager.check = function(){
 
-    //console.log("Manager->check");
+    console.log("Manager->check");
 
     fs.readdir(FTP_READY_PATH, (err, files) => {
 
@@ -52,7 +52,7 @@ Manager.check = function(){
  */
 Manager.handle = function(file_name){
 
-    //console.log("Manager->handle");
+    console.log("Manager->handle");
 
     Manager.status = "working";
 
@@ -131,6 +131,19 @@ Manager.ftp = function(upload_row){
         fs.unlink(current_path, (err3)=>{
 
             if(!err3){
+
+                Database.setFinishedStatus(upload_row.id, (err, result)=>{
+
+                    if(!err){
+
+                        
+
+                    }else{
+                        
+                        //TODO: handle error
+                    }
+
+                })
 
                 Manager.check();
 

@@ -5,13 +5,20 @@ const Database = {
     /**@type {mysql.Connection}*/
     connection:null,
 
+    init:()=>{},
+
     saveUploadInfo:(data, cb)=>{},
 
     getUploadsRow:(data, cb)=>{},
 
     getUploadById:(id, cb)=>{},
 
+    getUploadByTempKey:(temp_key, cb)=>{},
+
     setUploadedStatus:(id, size_enc, cb)=>{},
+
+    setFinishedStatus:(id, cb)=>{},
+
 }
 
 Database.connection = mysql.createConnection({
@@ -30,6 +37,22 @@ Database.connection.connect(function(err) {
     if (err) throw err;
     console.log("mysql connected!");
 });
+
+Database.init = function(){
+
+    Database.connection.query("CREATE DATABASE convertor", function (err, result) {
+        
+        if (!err) console.log("Database created");
+        
+        let sql = "CREATE TABLE uploads (id INT AUTO_INCREMENT PRIMARY KEY, temp_key VARCHAR(64), size BIGINT, type VARCHAR(16), encrypt BOOLEAN, status VARCHAR(16), size_enc BIGINT )";
+        
+        Database.connection.query(sql, function (err, result) {
+            
+            if (!err) console.log("Table created");
+        });
+    });
+}
+
 
 Database.saveUploadInfo = function(data, cb){
 
@@ -80,9 +103,31 @@ Database.getUploadById = function(id, cb){
     });
 }
 
+Database.getUploadByTempKey = function(temp_key, cb){
+
+    let qr = `SELECT * FROM uploads WHERE temp_key = '${temp_key}'`;
+
+    Database.connection.query(qr, function (err, result) {
+        
+        cb(err, result);
+        
+    });
+}
+
 Database.setUploadedStatus = function(id, size_enc, cb){
 
     let qr = `UPDATE uploads SET status = 'uploaded' WHERE id = ${id}`;
+
+    Database.connection.query(qr, function (err, result) {
+        
+        cb(err, result);
+        
+    });
+}
+
+Database.setFinishedStatus = function(id, cb){
+
+    let qr = `UPDATE uploads SET status = 'finished' WHERE id = ${id}`;
 
     Database.connection.query(qr, function (err, result) {
         
