@@ -7,17 +7,25 @@ const Database = {
 
     init:()=>{},
 
+    createTable:()=>{},
+
+    drop:()=>{},
+
     saveUploadInfo:(data, cb)=>{},
 
     getUploadsRow:(data, cb)=>{},
 
     getUploadById:(id, cb)=>{},
 
-    getUploadByTempKey:(temp_key, cb)=>{},
+    getUploadByUploadKey:(upload_key, cb)=>{},
 
     setUploadedStatus:(id, size_enc, cb)=>{},
 
+    setUploadEncrypt:(upload_key, encrypt, cb)=>{},
+
     setFinishedStatus:(id, cb)=>{},
+
+    deletRowByUploadKey:(upload_key, cb)=>{},
 
 }
 
@@ -43,13 +51,34 @@ Database.init = function(){
     Database.connection.query("CREATE DATABASE convertor", function (err, result) {
         
         if (!err) console.log("Database created");
+
+        Database.createTable();
         
-        let sql = "CREATE TABLE uploads (id INT AUTO_INCREMENT PRIMARY KEY, temp_key VARCHAR(64), size BIGINT, type VARCHAR(16), encrypt BOOLEAN, status VARCHAR(16), size_enc BIGINT )";
+    });
+}
+
+Database.createTable = function(){
+
+    let sql = "CREATE TABLE uploads (id INT AUTO_INCREMENT PRIMARY KEY, upload_key VARCHAR(64), size BIGINT, type VARCHAR(16), encrypt BOOLEAN, "+ 
+        "status VARCHAR(16), size_enc BIGINT, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)";
         
         Database.connection.query(sql, function (err, result) {
             
-            if (!err) console.log("Table created");
+            if (!err){
+                console.log("Table created");
+            }else{
+                console.log(err);
+            }
         });
+}
+
+Database.drop = function(){
+
+    let sql = "DROP TABLE uploads";
+
+    Database.connection.query(sql, function (err, result) {
+            
+        if (!err) console.log("Table droped!");
     });
 }
 
@@ -58,14 +87,14 @@ Database.saveUploadInfo = function(data, cb){
 
     let {
 
-        temp_key,
+        upload_key,
         size,
         type,
         encrypt,
 
     } = data;
 
-    let qr = `INSERT INTO uploads (temp_key, size, type, encrypt) VALUES ('${temp_key}', '${size}', '${type}', ${encrypt})`;
+    let qr = `INSERT INTO uploads (upload_key, size, type, encrypt) VALUES ('${upload_key}', '${size}', '${type}', ${encrypt})`;
 
     Database.connection.query(qr, function (err, result) {
         
@@ -79,11 +108,11 @@ Database.getUploadsRow = function(data, cb){
     let {
 
         id,
-        temp_key,
+        upload_key,
 
     } = data;
 
-    let qr = `SELECT * FROM uploads WHERE id = ${id} AND temp_key = '${temp_key}'`;
+    let qr = `SELECT * FROM uploads WHERE id = ${id} AND upload_key = '${upload_key}'`;
 
     Database.connection.query(qr, function (err, result) {
         
@@ -103,9 +132,9 @@ Database.getUploadById = function(id, cb){
     });
 }
 
-Database.getUploadByTempKey = function(temp_key, cb){
+Database.getUploadByUploadKey = function(upload_key, cb){
 
-    let qr = `SELECT * FROM uploads WHERE temp_key = '${temp_key}'`;
+    let qr = `SELECT * FROM uploads WHERE upload_key = '${upload_key}'`;
 
     Database.connection.query(qr, function (err, result) {
         
@@ -116,7 +145,18 @@ Database.getUploadByTempKey = function(temp_key, cb){
 
 Database.setUploadedStatus = function(id, size_enc, cb){
 
-    let qr = `UPDATE uploads SET status = 'uploaded' WHERE id = ${id}`;
+    let qr = `UPDATE uploads SET status = 'uploaded', updated_at = ${Date.now()} WHERE id = ${id}`;
+
+    Database.connection.query(qr, function (err, result) {
+        
+        cb(err, result);
+        
+    });
+}
+
+Database.setUploadEncrypt = function(upload_key, encrypt, cb){
+    
+    let qr = `UPDATE uploads SET encrypt = ${encrypt}, updated_at = ${Date.now()} WHERE upload_key = ${upload_key}`;
 
     Database.connection.query(qr, function (err, result) {
         
@@ -127,7 +167,18 @@ Database.setUploadedStatus = function(id, size_enc, cb){
 
 Database.setFinishedStatus = function(id, cb){
 
-    let qr = `UPDATE uploads SET status = 'finished' WHERE id = ${id}`;
+    let qr = `UPDATE uploads SET status = 'finished', updated_at = ${Date.now()} WHERE id = ${id}`;
+
+    Database.connection.query(qr, function (err, result) {
+        
+        cb(err, result);
+        
+    });
+}
+
+Database.deletRowByUploadKey = function(upload_key, cb){
+
+    let qr = `DELETE FROM uploads WHERE upload_key = '${upload_key}'`;
 
     Database.connection.query(qr, function (err, result) {
         

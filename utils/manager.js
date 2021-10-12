@@ -1,9 +1,8 @@
 const fs = require("fs");
+const env = require("../env");
 const Database = require("./database");
 const { sendViaFTP } = require("./downloadhost");
 const encryptor = require("./encryptor");
-
-const FTP_READY_PATH = './ftp_normal/';
 
 const Manager = {
 
@@ -93,7 +92,7 @@ Manager.encrypt = function(upload_row){
 
     //console.log("Manager->encrypt");
 
-    encryptor(upload_row.temp_key, upload_row.id, upload_row.type, (output_path)=>{
+    encryptor(upload_row.upload_key, upload_row.id, upload_row.type, (output_path)=>{
 
         Manager.ftp(upload_row);
     });
@@ -101,7 +100,7 @@ Manager.encrypt = function(upload_row){
 
 Manager.normal = function(upload_row){
     
-    fs.rename("./upload_ready/"+temp_key, "./ftp_normal/"+upload_row.id+"."+upload_row.type, (err) => {
+    fs.rename(env.UPLOAD_READY_PATH + upload_row.upload_key, "./ftp_normal/"+upload_row.id+"."+upload_row.type, (err) => {
         
         if(!err){
             
@@ -160,6 +159,65 @@ Manager.ftp = function(upload_row){
         console.log(err2);
     });
 
+}
+
+Manager.uploadExpire = function(){
+
+    setInterval(()=>{
+
+        fs.readdir(env.FTP_NRM_PATH, (err, files) => {
+
+            if(!err){
+    
+                files.forEach((fn)=>{
+
+                    let name = fn.split(".")[0];
+                    
+                    Database.getUploadByUploadKey(name, (err1, result1)=>{
+
+                        if(!err1 && result1[0]){
+
+                            if( (Date.now() - result1[0].updated_at) > env.UPLOAD_EXPIRE_TIME){
+
+                                //delete the row and the file
+    
+                                fs.unlink(env.FTP_NRM_PATH + fn, (err2)=>{
+    
+                                    if(!err2){
+    
+                                        Database.deletRowByUploadKey(name, (err3, result3)=>{
+                                            
+                                            if(err3){
+                                                //TODO: handle error
+                                            }
+    
+                                        })
+    
+                                    }else{
+    
+                                        //TODO: handle error
+                                    }
+    
+                                })
+                            }
+
+                        }else{
+
+                            //TODO: handle error
+                        }
+
+                    });
+
+                })
+    
+            }else{
+    
+                //TODO: handle this error
+            }
+        });
+
+
+    }, MANAGER_UPLOAD_EXPIRE_INTERVAL);
 }
 
 Manager.hibernate = function(){

@@ -11,7 +11,7 @@ function uploadCheck(req, res){
     let {
 
         user_token,
-        temp_key, // generated in main_server
+        upload_key, // generated in main_server
 
     } = req.body;
 
@@ -32,7 +32,7 @@ function uploadCheck(req, res){
         let d1 = {
             result:1000,
             data:{
-                temp_key:"j45j3j45",
+                upload_key:"j45j3j45",
                 encrypt:true,
                 file_size:1428135, 
                 file_type:"mp4",
@@ -47,7 +47,7 @@ function uploadCheck(req, res){
 
             Database.saveUploadInfo(
                 {
-                    temp_key: d1.data.temp_key,
+                    upload_key: d1.data.upload_key,
                     size: d1.data.file_size,
                     type: d1.data.file_type,
                     encrypt: d1.data.encrypt,
@@ -69,7 +69,7 @@ function uploadCheck(req, res){
                             result:1000,
                             data:{
                                 upload_id: result.insertId,
-                                temp_key: d1.data.temp_key,
+                                upload_key: d1.data.upload_key,
                                 info: result,
                             }
                         });

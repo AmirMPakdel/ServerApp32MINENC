@@ -12,14 +12,14 @@ function uploadProgress(req, res){
         let {
             
             upload_id,
-            temp_key,
+            upload_key,
 
         } = req.body;
 
         Database.getUploadsRow(
             {
                 id:upload_id,
-                temp_key,
+                upload_key,
             },
             (err1, result1)=>{
 
@@ -57,7 +57,7 @@ function uploadProgress(req, res){
 
                     }else{
 
-                        fs.rename("./uploads/"+req.file.filename, "./upload_ready/"+temp_key, (err2) => {
+                        fs.rename("./uploads/"+req.file.filename, "./upload_ready/"+upload_key, (err2) => {
 
                             if (err2){
 

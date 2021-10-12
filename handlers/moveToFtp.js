@@ -9,12 +9,11 @@ const fs = require('fs')
     
     let {
 
-        key,
+        upload_key,
 
     } = req.body;
 
-    console.log("move2FTP");
-    Database.getUploadByTempKey(key, (err1, result)=>{
+    Database.getUploadByTempKey(upload_key, (err1, result)=>{
 
         if(!err1){
 
@@ -22,7 +21,7 @@ const fs = require('fs')
 
             if(row){
 
-                fs.rename("./upload_ready/"+key, "./ftp_normal/"+row.id+"."+row.type, (err2) => {
+                fs.rename("./upload_ready/"+upload_key, "./ftp_normal/"+row.id+"."+row.type, (err2) => {
 
                     if(!err2){
             

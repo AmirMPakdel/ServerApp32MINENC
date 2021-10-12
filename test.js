@@ -4,6 +4,7 @@ const Manager = require("./utils/Manager");
 //Manager.check();
 
 let qs = require('qs');
+const Database = require("./utils/database");
 
 function upload_check(){
 
@@ -81,4 +82,5 @@ function moveToFtp(){
 }
 
 
-moveToFtp();
+//Database.drop();
+Database.createTable();

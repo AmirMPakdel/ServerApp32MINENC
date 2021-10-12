@@ -7,11 +7,26 @@ const Database = require("../utils/database");
  function getUploadObj(req, res){
     
     let {
-        key
+        
+        upload_key
+
     } = req.body;
 
-    Database.getUploadByTempKey(key, (err, result)=>{
+    Database.getUploadByUploadKey(upload_key, (err, result)=>{
 
+        if(!err){
+
+            res.json(result);
+
+        }else{
+
+            //TODO: handle err
+            res.json({
+                result:2001,
+                error:"row not found",
+                message:err
+            })
+        }
         
     });
 }
