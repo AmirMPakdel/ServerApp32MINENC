@@ -59,8 +59,10 @@ Database.init = function(){
 
 Database.createTable = function(){
 
-    let sql = "CREATE TABLE uploads (id INT AUTO_INCREMENT PRIMARY KEY, upload_key VARCHAR(64), size BIGINT, type VARCHAR(16), encrypt BOOLEAN, "+ 
-        "status VARCHAR(16), size_enc BIGINT, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)";
+    let sql = "CREATE TABLE uploads (id INT AUTO_INCREMENT PRIMARY KEY, upload_key VARCHAR(64), "+
+    "size BIGINT, type VARCHAR(16), encrypt BOOLEAN, status VARCHAR(16), size_enc BIGINT, "+ 
+    "public BOOLEAN, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "+
+    "updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)";
         
         Database.connection.query(sql, function (err, result) {
             

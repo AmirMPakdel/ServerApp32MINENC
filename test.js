@@ -83,4 +83,4 @@ function moveToFtp(){
 
 
 //Database.drop();
-Database.createTable();
+//Database.createTable();

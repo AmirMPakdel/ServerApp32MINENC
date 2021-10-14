@@ -5,7 +5,7 @@ const USER = "pz13345";
 const PASS = "bUuizF4k";
 const SECURE = false;
 
-async function sendViaFTP(source_path, target_path){
+async function sendViaFTP(source_path, target_path, public){
 
     const client = new ftp.Client()
 
@@ -23,7 +23,10 @@ async function sendViaFTP(source_path, target_path){
         //"./public_html/1f5635g5h6r82g5h.mp4"
         await client.uploadFrom(source_path, target_path);
 
-        await client.send("SITE CHMOD 640 "+target_path, false);
+        // if its not for public use then set access control
+        if(!public){
+            await client.send("SITE CHMOD 640 "+target_path, false);
+        }
 
         //await client.downloadTo("README_COPY.md", "README_FTP.md")
 
