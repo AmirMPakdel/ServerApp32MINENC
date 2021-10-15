@@ -1,26 +1,23 @@
 const ftp = require("basic-ftp");
-
-const HOST = "dltest.tootifa.ir";
-const USER = "pz13345";
-const PASS = "bUuizF4k";
-const SECURE = false;
+const env = require("../env");
 
 async function sendViaFTP(source_path, target_path, public){
 
     const client = new ftp.Client()
 
-    client.ftp.verbose = true
+    client.ftp.verbose = env.DLHOST_VERBOSE;
 
     try {
 
         await client.access({
-            host: HOST,
-            user: USER,
-            password: PASS,
-            secure: SECURE
+            host: env.DLHOST_DOMAIN,
+            user: env.DLHOST_USERNAME,
+            password: env.DLHOST_PASSWORD,
+            secure: env.DLHOST_SECURE_MODE,
         })
+
         //console.log(await client.list())
-        //"./public_html/1f5635g5h6r82g5h.mp4"
+        
         await client.uploadFrom(source_path, target_path);
 
         // if its not for public use then set access control
@@ -34,7 +31,7 @@ async function sendViaFTP(source_path, target_path, public){
         console.log(err)
     }
 
-    client.close()
+    client.close();
 }
 
 module.exports = {

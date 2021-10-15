@@ -3,7 +3,6 @@ const multer  = require('multer')
 const uploadCheck = require('./handlers/uploadCheck')
 const uploadProgress = require('./handlers/uploadProgress')
 const getUploadObj = require('./handlers/getUploadObj')
-const { sendViaFTP } = require('./utils/downloadhost')
 const Manager = require('./utils/Manager')
 const moveToFtp = require('./handlers/moveToFtp')
 
@@ -25,11 +24,6 @@ app.post('/moveToFtp', moveToFtp);
 
 app.post('/getUploadObj', getUploadObj);
 
-
-
-// sendViaFTP().then(()=>{
-//     console.log("done!")
-// })
 
 app.listen(port, () => {
   console.log(`convertor listening at http://localhost:${port}`)

@@ -1,5 +1,7 @@
 const Database = require("../utils/database");
 const fs = require("fs");
+const statics = require("../statics");
+const env = require("../env");
 
 /**
  * @param {import("express").Request} req 
@@ -27,53 +29,40 @@ function uploadProgress(req, res){
 
                 if(err1){
 
-                    deleteTempFile(req.file)
+                    deleteTempFile(req.file);
 
-                    res.status(500).json({
-                        message: "fetching row from sql failed",
-                        error:err1
-                    });
+                    statics.sendError(res, err1, "fetching row from sql failed");
 
                 }else if(!row){
 
-                    deleteTempFile(req.file)
+                    deleteTempFile(req.file);
 
                     //wrong id or temp_key
-                    res.json({
-                        result:2001
-                    });
+                    statics.sendError(res, "1", "uploadProgress->wrong id or temp_key", statics.INVALID_UPLOAD_KEY);
 
                 }else{
 
                     //comparing the sizes
                     if(row.size !== req.file.size){
 
-                        deleteTempFile(req.file)
+                        deleteTempFile(req.file);
 
                         //not the same file with the same size
-                        res.json({
-                            result:2002
-                        });
+                        statics.sendError(res, "1", "uploadProgress->not the same file with the same size", statics.SIZES_NOT_EQUAL);
 
                     }else{
 
-                        fs.rename("./uploads/"+req.file.filename, "./upload_ready/"+upload_key, (err2) => {
+                        fs.rename("./uploads/"+req.file.filename, env.UPLOAD_READY_PATH+upload_key, (err2) => {
 
                             if (err2){
 
                                 //not the same file with the same size
-                                res.status(500).json({
-                                    message: "rename and moving file failed",
-                                    error:err2
-                                });
+                                statics.sendError(res, err2, "uploadProgress->rename and moving file failed");
 
                             }else{
 
                                 // success
-                                res.json({
-                                    result:1000,
-                                    data:{}
-                                });
+                                statics.sendData(res, {});
                             }
                         });
                     }
@@ -83,10 +72,8 @@ function uploadProgress(req, res){
 
     }else{
 
-        //no file found
-        res.json({
-            result:2003
-        });
+        //no file found in request
+        statics.sendError(res, "1", "uploadProgress->no file found in request", statics.FILE_NOT_FOUND);
     }
 }
 
@@ -94,12 +81,11 @@ function deleteTempFile(file, cb){
 
     fs.unlink("./uploads/"+file.filename, (err)=>{
         if(!err){
-            if(cb)cb()
+            if(cb)cb();
         }else{
-            console.log("AMP1");
-            console.log(err);
+            statics.criticalInternalError(err, "uploadProgress->deleteTempFile");
         }
-    })
+    });
 }
 
 module.exports = uploadProgress;

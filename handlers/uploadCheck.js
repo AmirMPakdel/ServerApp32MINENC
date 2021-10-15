@@ -1,4 +1,5 @@
 const { default: axios } = require("axios");
+const statics = require("../statics");
 const Database = require("../utils/database");
 
 /**
@@ -7,84 +8,67 @@ const Database = require("../utils/database");
  */
 function uploadCheck(req, res){
     
-
     let {
 
-        user_token,
+        token,
         upload_key, // generated in main_server
 
     } = req.body;
 
-    // axios.post("/api/upload_file_check", {user_token, temp_key}).then((res1)=>{
-
-    //     let d1 = res1.data;
-
-    // }).catch((e)=>{
-
-    //     res.status(500).json({
-    //         message: "main_server /api/upload_file_check failed",
-    //         error:e
-    //     })
-    // });
-
+    //TODO: set axios real request to main server
     setTimeout((req, res)=>{
 
         let d1 = {
-            result:1000,
+            result_code:statics.SUCCESS,
             data:{
-                upload_key:"j45j3j45",
+                upload_key:"bfad-dl23l3l4-l5k4b45jl3j",
                 encrypt:true,
+                public:false,
                 file_size:1428135, 
                 file_type:"mp4",
             }
-        }//res1.data;
+        }
 
-
-        if(d1.result === 1000){
+        if(d1.result_code === statics.SUCCESS){
 
             //TODO: check local diskspace
             //TODO: check dlhost diskspace
 
+            d2 = d1.data;
+
             Database.saveUploadInfo(
                 {
-                    upload_key: d1.data.upload_key,
-                    size: d1.data.file_size,
-                    type: d1.data.file_type,
-                    encrypt: d1.data.encrypt,
+                    upload_key: d2.upload_key,
+                    size: d2.file_size,
+                    type: d2.file_type,
+                    encrypt: d2.encrypt,
+                    public: d2.public,
                 },
                 (err, result)=>{
 
                     if(err){
 
-                        //TODO: handle db error
-                        res.status(500).json({
-                            message: "saving upload info error",
-                            error:err
-                        })
+                        statics.sendError(res, err, "uploadCheck->saving upload info error");
 
                     }else{
 
                         // tell user its ok to upload ur file
-                        res.json({
-                            result:1000,
-                            data:{
-                                upload_id: result.insertId,
-                                upload_key: d1.data.upload_key,
-                                info: result,
-                            }
-                        });
-
+                        let data = {
+                            upload_id: result.insertId,
+                            upload_key: d2.upload_key,
+                            info: result,
+                        }
+                        statics.sendData(res, data);
                     }
                 }
             )
 
         }else{
-            //TODO: handle error
+
+            statics.sendError(res, "1", "uploadCheck->upload rejected from main server", statics.UPLOAD_REJECT);
         }
         
-
     }, 1500, req, res);
-
 }
 
 module.exports = uploadCheck;

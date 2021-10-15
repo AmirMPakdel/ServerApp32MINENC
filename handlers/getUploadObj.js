@@ -1,3 +1,4 @@
+const statics = require("../statics");
 const Database = require("../utils/database");
 
 /**
@@ -12,22 +13,21 @@ const Database = require("../utils/database");
 
     } = req.body;
 
+    //TODO: set a main_server access_key so others won't access this data
+
     Database.getUploadByUploadKey(upload_key, (err, result)=>{
 
         if(!err){
 
-            res.json(result);
+            result[0].enc_key = null;
+
+            statics.sendData(res, result[0]);
 
         }else{
 
-            //TODO: handle err
-            res.json({
-                result:2001,
-                error:"row not found",
-                message:err
-            })
+            //wrong uploadkey. row not found
+            statics.sendError(res, err, "getUploadObj->row not found", statics.INVALID_UPLOAD_KEY);
         }
-        
     });
 }
 

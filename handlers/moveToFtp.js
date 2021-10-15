@@ -1,5 +1,6 @@
 const Database = require("../utils/database");
-const fs = require('fs')
+const fs = require('fs');
+const statics = require("../statics");
 
 /**
  * @param {import("express").Request} req 
@@ -10,10 +11,17 @@ const fs = require('fs')
     let {
 
         upload_key,
+        enc_key, // if the file is encrypted get an 16char string from main_server
 
     } = req.body;
 
-    Database.getUploadByTempKey(upload_key, (err1, result)=>{
+    console.log(enc_key);
+
+    if(!enc_key){
+        enc_key = null;
+    }
+
+    Database.getUploadByUploadKey(upload_key, (err1, result)=>{
 
         if(!err1){
 
@@ -21,48 +29,61 @@ const fs = require('fs')
 
             if(row){
 
-                fs.rename("./upload_ready/"+upload_key, "./ftp_normal/"+row.id+"."+row.type, (err2) => {
+                if(row.encrypt){
 
-                    if(!err2){
-            
-                        res.json({
-                            result:1000
+                    if(enc_key && enc_key.length===16){
+
+                        Database.setUploadEncKey(upload_key, enc_key, (err2, result)=>{
+
+                            if(!err2){
+    
+                                movingTheFile(res, row);
+    
+                            }else{
+    
+                                statics.sendError(res, err2, "moveTOFtp->updating upload obj failed");
+                            }
                         });
-            
+
                     }else{
-            
-                        //TODO: handle errors
-                        res.json({
-                            result:2001,
-                            error:"",
-                            message:err2
-                        });
+
+                        statics.sendError(res, "1", "missing a valid 16 character 'enc_key'");
                     }
-                });
+
+                }else{
+
+                    movingTheFile(res, row);
+                }
 
             }else{
 
-                //TODO: handle errors
-                res.json({
-                    result:2002,
-                    error:"row not found",
-                    message:""
-                })
+                //row not found
+                statics.sendError(res, "1", "moveTOFtp->row not found", statics.INVALID_UPLOAD_KEY);
             }
 
         }else{
 
-            //TODO: handle errors
-            res.json({
-                result:2003,
-                error:"",
-                message:err1
-            })
+            //problem in fetching the upload obj
+            statics.sendError(res, err1, "moveTOFtp->problem in fetching the upload obj")
         }
     });
+}
 
-    
+function movingTheFile(res, row) {
 
+    fs.rename("./upload_ready/"+row.upload_key, "./ftp_normal/"+row.upload_key+"."+row.type, (err) => {
+
+        if(!err){
+            
+            //success
+            statics.sendData(res, {});
+
+        }else{
+
+            //change files path and name failed
+            statics.sendError(res, err, "moveTOFtp->change files path and name failed");
+        }
+    });
 }
 
 module.exports = moveToFtp;
