@@ -3,7 +3,7 @@ const multer  = require('multer')
 const uploadCheck = require('./handlers/uploadCheck')
 const uploadProgress = require('./handlers/uploadProgress')
 const getUploadObj = require('./handlers/getUploadObj')
-const Manager = require('./utils/Manager')
+const Manager = require('./utils/manager')
 const moveToFtp = require('./handlers/moveToFtp')
 
 const upload = multer({ dest: 'uploads/' })
