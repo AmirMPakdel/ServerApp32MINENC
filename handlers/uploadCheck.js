@@ -11,9 +11,12 @@ function uploadCheck(req, res){
     let {
 
         token,
+        tenant,
         upload_key, // generated in main_server
 
     } = req.body;
+
+    //TODO: validate inputs
 
     //TODO: set axios real request to main server
     setTimeout((req, res)=>{
@@ -22,9 +25,10 @@ function uploadCheck(req, res){
             result_code:statics.SUCCESS,
             data:{
                 upload_key:"bfad-dl23l3l4-l5k4b45jl3j",
+                tenant : "pfreza",
                 encrypt:true,
                 public:false,
-                file_size:1428135, 
+                file_size:1428135,
                 file_type:"mp4",
             }
         }
@@ -43,6 +47,7 @@ function uploadCheck(req, res){
                     type: d2.file_type,
                     encrypt: d2.encrypt,
                     public: d2.public,
+                    tenant: d2.tenant,
                 },
                 (err, result)=>{
 
@@ -68,7 +73,7 @@ function uploadCheck(req, res){
             statics.sendError(res, "1", "uploadCheck->upload rejected from main server", statics.UPLOAD_REJECT);
         }
         
-    }, 1500, req, res);
+    }, 200, req, res);
 }
 
 module.exports = uploadCheck;

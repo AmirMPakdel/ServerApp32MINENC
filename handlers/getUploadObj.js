@@ -17,7 +17,7 @@ const Database = require("../utils/database");
 
     Database.getUploadByUploadKey(upload_key, (err, result)=>{
 
-        if(!err){
+        if(!err && result[0]){
 
             result[0].enc_key = null;
 

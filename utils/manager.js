@@ -20,6 +20,8 @@ Manager.init = function(){
     //console.log("Manager->init");
 
     Manager.check();
+
+    Manager.uploadExpire();
 }
 
 Manager.check = function(){
@@ -122,11 +124,14 @@ Manager.ftp = function(upload_row){
 
     let upload_key = upload_row.upload_key;
     let current_path = "./ftp_normal/"+upload_key+"."+upload_row.type;
-    let destination = "./public_html/normal/"+upload_key+"."+upload_row.type;;
+    let destination = "./public_html/course_media/"+upload_row.tenant+"/"+upload_key+"."+upload_row.type;
 
     if(upload_row.encrypt){
-        destination = "./public_html/encrypted/"+upload_key+"."+upload_row.type;
         current_path = "./ftp_encrypted/"+upload_key+"."+upload_row.type;
+    }
+
+    if(upload_row.public){
+        destination = "./public_html/public_files/"+upload_row.tenant+"/"+upload_key+"."+upload_row.type;
     }
 
     sendViaFTP(current_path, destination).then(()=>{
@@ -141,7 +146,7 @@ Manager.ftp = function(upload_row){
 
                         statics.criticalInternalError(err2, "Manager->setting the finish status failed");
                     }
-                })
+                });
 
                 Manager.check();
 
@@ -163,7 +168,9 @@ Manager.uploadExpire = function(){
 
     setInterval(()=>{
 
-        fs.readdir(env.FTP_NRM_PATH, (err, files) => {
+        //console.log("uploadExpire check");
+
+        fs.readdir(env.UPLOAD_READY_PATH, (err, files) => {
 
             if(!err){
 
@@ -175,10 +182,13 @@ Manager.uploadExpire = function(){
 
                         if(!err1 && result1[0]){
 
-                            if((Date.now() - result1[0].updated_at) > env.UPLOAD_EXPIRE_TIME){
+                            
+                            if((Date.now() - new Date(result1[0].updated_at).getTime()) > env.UPLOAD_EXPIRE_TIME){
+
+                                //console.log("uploadExpire 1");
 
                                 //delete the row and the file
-                                fs.unlink(env.FTP_NRM_PATH + fn, (err2)=>{
+                                fs.unlink(env.UPLOAD_READY_PATH + fn, (err2)=>{
 
                                     if(!err2){
 
@@ -211,7 +221,7 @@ Manager.uploadExpire = function(){
         });
 
 
-    }, MANAGER_UPLOAD_EXPIRE_INTERVAL);
+    }, env.MANAGER_UPLOAD_EXPIRE_INTERVAL);
 }
 
 Manager.hibernate = function(){

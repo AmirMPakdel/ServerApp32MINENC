@@ -13,6 +13,7 @@ function uploadProgress(req, res){
 
         let {
             
+            tenant,
             upload_id,
             upload_key,
 
@@ -20,6 +21,7 @@ function uploadProgress(req, res){
 
         Database.getUploadsRow(
             {
+                tenant,
                 id:upload_id,
                 upload_key,
             },

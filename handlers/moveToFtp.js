@@ -15,8 +15,6 @@ const statics = require("../statics");
 
     } = req.body;
 
-    console.log(enc_key);
-
     if(!enc_key){
         enc_key = null;
     }

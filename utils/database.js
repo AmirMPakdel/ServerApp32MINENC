@@ -52,7 +52,7 @@ Database.init = function(){
 
 Database.createTable = function(){
 
-    let sql = "CREATE TABLE uploads (id INT AUTO_INCREMENT PRIMARY KEY, upload_key VARCHAR(64), "+
+    let sql = "CREATE TABLE uploads (id INT AUTO_INCREMENT PRIMARY KEY, tenant VARCHAR(64), upload_key VARCHAR(64), "+
     "size BIGINT, type VARCHAR(16), encrypt BOOLEAN, status VARCHAR(16), size_enc BIGINT, "+ 
     "public BOOLEAN, enc_key VARCHAR(16), created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "+
     "updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)";
@@ -67,13 +67,17 @@ Database.createTable = function(){
         });
 }
 
-Database.drop = function(){
+Database.drop = function(cb){
 
     let sql = "DROP TABLE uploads";
 
     Database.connection.query(sql, function (err, result) {
             
-        if (!err) console.log("Table droped!");
+        if (!err){
+            console.log("Table droped!");
+            cb()
+        }
+
     });
 }
 
@@ -86,10 +90,12 @@ Database.saveUploadInfo = function(data, cb){
         size,
         type,
         encrypt,
+        public,
+        tenant,
 
     } = data;
 
-    let qr = `INSERT INTO uploads (upload_key, size, type, encrypt) VALUES ('${upload_key}', '${size}', '${type}', ${encrypt})`;
+    let qr = `INSERT INTO uploads (upload_key, size, type, public, status, encrypt, tenant) VALUES ('${upload_key}', '${size}', '${type}',${public}, 'verified', ${encrypt}, '${tenant}')`;
 
     Database.connection.query(qr, function (err, result) {
         
@@ -102,12 +108,13 @@ Database.getUploadsRow = function(data, cb){
 
     let {
 
+        tenant,
         id,
         upload_key,
 
     } = data;
 
-    let qr = `SELECT * FROM uploads WHERE id = ${id} AND upload_key = '${upload_key}'`;
+    let qr = `SELECT * FROM uploads WHERE id = ${id} AND upload_key = '${upload_key}' AND tenant = '${tenant}'`;
 
     Database.connection.query(qr, function (err, result) {
         
@@ -151,7 +158,7 @@ Database.setUploadEncKey = function(upload_key, enc_key, cb){
 
 Database.setUploadedStatus = function(id, size_enc, cb){
 
-    let qr = `UPDATE uploads SET status = 'uploaded', updated_at = ${Date.now()} WHERE id = ${id}`;
+    let qr = `UPDATE uploads SET status = 'uploaded', updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`;
 
     Database.connection.query(qr, function (err, result) {
         
@@ -162,7 +169,7 @@ Database.setUploadedStatus = function(id, size_enc, cb){
 
 Database.setUploadEncrypt = function(upload_key, encrypt, cb){
     
-    let qr = `UPDATE uploads SET encrypt = ${encrypt}, updated_at = ${new Date().toISOString()} WHERE upload_key = ${upload_key}`;
+    let qr = `UPDATE uploads SET encrypt = ${encrypt}, updated_at = CURRENT_TIMESTAMP WHERE upload_key = ${upload_key}`;
 
     Database.connection.query(qr, function (err, result) {
         
@@ -173,7 +180,7 @@ Database.setUploadEncrypt = function(upload_key, encrypt, cb){
 
 Database.setFinishedStatus = function(upload_key, cb){
 
-    let qr = `UPDATE uploads SET status = 'finished', updated_at = '${new Date().toISOString()}' WHERE upload_key = '${upload_key}'`;
+    let qr = `UPDATE uploads SET status = 'finished', updated_at = CURRENT_TIMESTAMP WHERE upload_key = '${upload_key}'`;
 
     Database.connection.query(qr, function (err, result) {
         
