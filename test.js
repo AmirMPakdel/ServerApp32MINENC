@@ -1,5 +1,5 @@
 const { default: axios } = require("axios");
-const Manager = require("./utils/Manager");
+const Manager = require("./utils/manager");
 
 //Manager.check();
 
