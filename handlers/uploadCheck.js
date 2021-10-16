@@ -26,8 +26,8 @@ function uploadCheck(req, res){
             data:{
                 upload_key:"bfad-dl23l3l4-l5k4b45jl3j",
                 tenant : "pfreza",
-                encrypt:true,
-                public:false,
+                encrypt:false,
+                public:true,
                 file_size:1428135,
                 file_type:"mp4",
             }

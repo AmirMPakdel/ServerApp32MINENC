@@ -37,7 +37,6 @@ Manager.check = function(){
                 console.log("Manager->check file name ->>>>>"+files[0]);
                 Manager.handle(files[0]);
 
-
             }else{
 
                 Manager.hibernate();
@@ -77,7 +76,7 @@ Manager.handle = function(file_name){
 
                 }else{
                     
-                    Manager.normal(row);
+                    Manager.ftp(row);
                 }
 
             }else{
@@ -103,20 +102,7 @@ Manager.encrypt = function(upload_row){
         Manager.ftp(upload_row);
     });
 }
-
-Manager.normal = function(upload_row){
     
-    fs.rename(env.UPLOAD_READY_PATH + upload_row.upload_key, "./ftp_normal/"+upload_row.id+"."+upload_row.type, (err) => {
-        
-        if(!err){
-            
-            Manager.ftp(row);
-
-        }else{
-            statics.criticalInternalError(err, "Manager->renaming of the normal file failed");
-        }
-    });
-}
 
 Manager.ftp = function(upload_row){
 
@@ -124,17 +110,18 @@ Manager.ftp = function(upload_row){
 
     let upload_key = upload_row.upload_key;
     let current_path = "./ftp_normal/"+upload_key+"."+upload_row.type;
-    let destination = "./public_html/course_media/"+upload_row.tenant+"/"+upload_key+"."+upload_row.type;
+    let distination_dir = "./public_html/course_media/"+upload_row.tenant+"/";
+    let file_name = upload_key+"."+upload_row.type;
 
     if(upload_row.encrypt){
         current_path = "./ftp_encrypted/"+upload_key+"."+upload_row.type;
     }
 
     if(upload_row.public){
-        destination = "./public_html/public_files/"+upload_row.tenant+"/"+upload_key+"."+upload_row.type;
+        distination_dir = "./public_html/public_files/"+upload_row.tenant+"/";
     }
 
-    sendViaFTP(current_path, destination).then(()=>{
+    sendViaFTP(current_path, distination_dir, file_name, upload_row.public).then(()=>{
 
         fs.unlink(current_path, (err1)=>{
 
