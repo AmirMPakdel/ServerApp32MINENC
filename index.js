@@ -16,6 +16,8 @@ const port = 8020
 
 Manager.init();
 
+app.get("/test", (req,res)=>{res.send("Hello World")});
+
 app.post('/upload_check', uploadCheck);
 
 app.post('/upload_progress', upload.single('mfile'), uploadProgress);
