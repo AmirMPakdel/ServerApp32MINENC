@@ -1,6 +1,7 @@
 const { default: axios } = require("axios");
 const statics = require("../statics");
 const Database = require("../utils/database");
+const { uploadKeyCheck } = require("../utils/mainServer");
 
 /**
  * @param {import("express").Request} req 
@@ -19,61 +20,61 @@ function uploadCheck(req, res){
     //TODO: validate inputs
 
     //TODO: set axios real request to main server
-    setTimeout((req, res)=>{
 
-        let d1 = {
-            result_code:statics.SUCCESS,
-            data:{
-                upload_key:"bfad-dl23l3l4-l5k4b45jl3j",
-                tenant : "pfreza",
-                encrypt:true,
-                public:false,
-                file_size:1428135,
-                file_type:"mp4",
-            }
-        }
+    uploadKeyCheck(req, res, (err1, data)=>{
 
-        if(d1.result_code === statics.SUCCESS){
+        if(!err1){
 
-            //TODO: check local diskspace
-            //TODO: check dlhost diskspace
+            if(res2.result_code === statics.SUCCESS){
 
-            d2 = d1.data;
-
-            Database.saveUploadInfo(
-                {
-                    upload_key: d2.upload_key,
-                    size: d2.file_size,
-                    type: d2.file_type,
-                    encrypt: d2.encrypt,
-                    public: d2.public,
-                    tenant: d2.tenant,
-                },
-                (err, result)=>{
-
-                    if(err){
-
-                        statics.sendError(res, err, "uploadCheck->saving upload info error");
-
-                    }else{
-
-                        // tell user its ok to upload ur file
-                        let data = {
-                            upload_id: result.insertId,
-                            upload_key: d2.upload_key,
-                            info: result,
+                //TODO: check local diskspace
+    
+                //TODO: check dlhost diskspace
+    
+                d2 = res2.data;
+    
+                Database.saveUploadInfo(
+                    {
+                        upload_key,
+                        tenant,
+                        size: d2.file_size,
+                        type: d2.file_type,
+                        encrypt: d2.encrypt,
+                        public: d2.public,
+                    },
+                    (err, result)=>{
+    
+                        if(err){
+    
+                            statics.sendError(res, err, "uploadCheck->saving upload info error");
+    
+                        }else{
+    
+                            // tell user its ok to upload ur file
+                            let data = {
+                                upload_id: result.insertId,
+                                upload_key: d2.upload_key,
+                                info: result,
+                            }
+                            statics.sendData(res, data);
                         }
-                        statics.sendData(res, data);
                     }
-                }
-            )
+                )
+    
+            }else{
+    
+                statics.sendError(res, "1", "uploadCheck->upload rejected from main server", statics.UPLOAD_REJECT);
+            }
+
 
         }else{
+            
 
-            statics.sendError(res, "1", "uploadCheck->upload rejected from main server", statics.UPLOAD_REJECT);
         }
+
         
-    }, 200, req, res);
+    })
+    
 }
 
 module.exports = uploadCheck;
