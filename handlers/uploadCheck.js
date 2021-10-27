@@ -10,8 +10,11 @@ const { uploadKeyCheck } = require("../utils/mainServer");
 function uploadCheck(req, res){
     
     let {
-
         token,
+        file_type,
+        upload_type, //(exp. educator_avatar)
+        course_id, //(nullable)
+
         tenant,
         upload_key, // generated in main_server
 
@@ -19,28 +22,33 @@ function uploadCheck(req, res){
 
     //TODO: validate inputs
 
-    //TODO: set axios real request to main server
-
-    uploadKeyCheck(req, res, (err1, data)=>{
+    uploadKeyCheck(req, res, (err1, d1)=>{
 
         if(!err1){
 
-            if(res2.result_code === statics.SUCCESS){
+            if(d1.result_code === statics.SUCCESS){
 
                 //TODO: check local diskspace
     
                 //TODO: check dlhost diskspace
     
-                d2 = res2.data;
+                let {
+
+                    file_type,
+                    file_size,
+                    is_encrypted,
+                    is_public,
+
+                } = d1.data;
     
                 Database.saveUploadInfo(
                     {
                         upload_key,
                         tenant,
-                        size: d2.file_size,
-                        type: d2.file_type,
-                        encrypt: d2.encrypt,
-                        public: d2.public,
+                        size: file_size,
+                        type: file_type,
+                        encrypt: is_encrypted,
+                        public: is_public,
                     },
                     (err, result)=>{
     
@@ -63,18 +71,18 @@ function uploadCheck(req, res){
     
             }else{
     
-                statics.sendError(res, "1", "uploadCheck->upload rejected from main server", statics.UPLOAD_REJECT);
+                statics.sendError(res, "1", "uploadCheck->upload rejected from main server", d1.result_code);
             }
 
 
         }else{
             
+            statics.sendError(res, err1, "uploadCheck->request to main server failed", statics.SERVER_ERROR);
+
+            statics.criticalInternalError(err1, "uploadCheck->request to main server failed");
 
         }
-
-        
     })
-    
 }
 
 module.exports = uploadCheck;
