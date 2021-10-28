@@ -26,6 +26,8 @@ function uploadCheck(req, res){
 
         if(!err1){
 
+            d1 = d1.data;
+
             if(d1.result_code === statics.SUCCESS){
 
                 //TODO: check local diskspace
@@ -61,7 +63,7 @@ function uploadCheck(req, res){
                             // tell user its ok to upload ur file
                             let data = {
                                 upload_id: result.insertId,
-                                upload_key: d2.upload_key,
+                                upload_key: d1.upload_key,
                                 info: result,
                             }
                             statics.sendData(res, data);
