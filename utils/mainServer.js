@@ -17,7 +17,7 @@ function uploadKeyCheck(req, res, cb){
 
     axios.post("http://tootifa.ir/api/tenant/user/upload/verify", p, {
         headers:{
-            "X-Tenant":b.tenant
+            "X-TENANT":b.tenant
         }
     }).then(res2=>{
 
