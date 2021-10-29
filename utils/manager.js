@@ -60,7 +60,10 @@ Manager.handle = function(file_name){
     Manager.status = "working";
 
     let name_array = file_name.split(".");
-    let upload_key = name_array[0];
+    let upload_key = "";
+    for(let i=0; i<name_array.length-1; i++){
+        upload_key = name_array[i];
+    }
     
     Database.getUploadByUploadKey(upload_key, (err, result)=>{
 

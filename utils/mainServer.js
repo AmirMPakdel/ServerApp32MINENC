@@ -14,8 +14,6 @@ function uploadKeyCheck(req, res, cb){
         course_id: b.course_id, //(nullable)
     }
 
-    console.log(p);
-    console.log(b.tenant);
     axios.post("http://tootifa.ir/api/tenant/user/upload/verify", p, {headers:{
 
         "X-TENANT":b.tenant
