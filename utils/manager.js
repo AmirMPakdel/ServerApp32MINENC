@@ -64,14 +64,16 @@ Manager.handle = function(file_name){
     for(let i=0; i<name_array.length-1; i++){
         upload_key += name_array[i];
     }
+
+    console.log(upload_key);
     
     Database.getUploadByUploadKey(upload_key, (err, result)=>{
 
         if(!err){
 
-            if(result.length){
+            let row = result[0];
 
-                let row = result[0];
+            if(row){
 
                 if(row.encrypt){
 
