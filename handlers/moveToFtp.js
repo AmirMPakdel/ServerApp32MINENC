@@ -11,7 +11,6 @@ const statics = require("../statics");
     let {
 
         upload_key,
-        tenant,
         enc_key, // if the file is encrypted get an 16char string from main_server
 
     } = req.body;

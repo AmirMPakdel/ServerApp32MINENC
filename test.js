@@ -82,7 +82,52 @@ function moveToFtp(){
 }
 
 
-Database.drop(()=>{
-  Database.createTable();
+// Database.drop(()=>{
+//   Database.createTable();
+// });
+
+
+function say_good_morning(params) {
+
+  return new Promise((resolve, reject)=>{
+
+
+    setTimeout(()=>{
+
+      if(params.day){
+
+        resolve("good day #"+params.num);
+
+      }else{
+
+        reject({error:"in day"+params.num+" there is no sunshine", message:"fuck #"+params.num});
+      }
+
+    }, 50, params);
+
+  });
+}
+
+let arra = [
+  {day:true, num:1},
+  {day:false, num:2},
+  {day:false, num:3},
+  {day:true, num:4},
+]
+
+let pr_arr = [];
+arra.forEach((e)=>{
+
+  pr_arr.push(say_good_morning(e).catch(error=>error));
+  
 });
 
+
+let errors = [];
+let results = [];
+
+Promise.all(pr_arr).then((result1)=>{
+
+  console.log(result1);
+
+});

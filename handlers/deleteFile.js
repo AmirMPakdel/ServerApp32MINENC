@@ -13,55 +13,99 @@ function deleteFile(req, res){
         tenant,
     } = req.body;
 
-    getUploadByUploadKey(upload_key, (err, data)=>{
+    let upload_keys = [];
 
-        data = data[0];
+    if(Array.isArray(upload_key_is_array)){
 
-        console.log(data);
+        upload_keys = upload_key;
 
-        if(data){
+    }else{
 
-            if(tenant === data.tenant){
+        upload_keys = [upload_key];
+    }
 
-                let file_path = "/public_html/";
-                if(data.public){
-                    file_path += "public_files/";
-                }else{
-                    file_path += "course_media/";
-                }
-                file_path += data.tenant+"/"+data.upload_key+"."+data.type;
+    
+    let promises = [];
 
-                deleteViaFTP(file_path).then(()=>{
+    upload_keys.forEach(e=>{
 
-                    deletRowByUploadKey(data.upload_key, (err, res2)=>{
-                       
-                        if(!err){
-                        
-                            statics.sendData(res, {}, statics.SUCCESS);
-                        
-                        }else{
+        //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all#promise.all_fail-fast_behavior
+        
+        //handling the fast-rejection with .catch(e=>e)
+        promises.push(deleteSinglFilePromise(e, tenant).catch(e=>e));
+    });
 
-                            statics.sendError(res, err, "deleteFile->deletRowByUploadKey->couldn't delete the upload row from db");
+    let errors = [];
+    let error_messages = [];
+    let result_codes = [];
+    // errors.push(e.error);
+    // error_messages.push(e.error_message);
+    // result_codes.push(e.result_codes);
 
-                        }
-                    });
+    Promise.all(promises).then(()=>{
 
-                }).catch(e=>{
+        if(errors.length){
 
-                    statics.sendError(res, e, "deleteFile->removing file via ftp failed", statics.SERVER_ERROR);
-                });
-
-            }else{
-
-                statics.sendError(res, "1", "deleteFile->upload_obj not found. wrong tenant", statics.INVALID_TENANT);
-            }
+            statics.sendError(res, errors, error_messages, result_codes);
 
         }else{
 
-            statics.sendError(res, "1", "deleteFile->upload_obj not found. wrong upload_key", statics.INVALID_UPLOAD_KEY);
+            statics.sendData(res, {}, statics.SUCCESS);
         }
     });
+}
 
+async function deleteSinglFilePromise(upload_key, tenant){
+
+    return new Promise((resolve, reject)=>{
+
+        getUploadByUploadKey(upload_key, (err, data)=>{
+
+            data = data[0];
+
+            if(data){
+    
+                if(tenant === data.tenant){
+    
+                    let file_path = "/public_html/";
+                    if(data.public){
+                        file_path += "public_files/";
+                    }else{
+                        file_path += "course_media/";
+                    }
+                    file_path += data.tenant+"/"+data.upload_key+"."+data.type;
+    
+                    deleteViaFTP(file_path).then(()=>{
+    
+                        deletRowByUploadKey(data.upload_key, (err, res2)=>{
+                           
+                            if(!err){
+                            
+                                resolve();
+                            
+                            }else{
+    
+                                statics.sendError(res, err, "deleteFile->deletRowByUploadKey->couldn't delete the upload row from db");
+    
+                            }
+                        });
+    
+                    }).catch(e=>{
+    
+                        statics.sendError(res, e, "deleteFile->removing file via ftp failed", statics.SERVER_ERROR);
+                    });
+    
+                }else{
+    
+                    statics.sendError(res, "1", "deleteFile->upload_obj not found. wrong tenant", statics.INVALID_TENANT);
+                }
+    
+            }else{
+    
+                statics.sendError(res, "1", "deleteFile->upload_obj not found. wrong upload_key", statics.INVALID_UPLOAD_KEY);
+            }
+        });
+    });
 }
 
 module.exports = deleteFile;
