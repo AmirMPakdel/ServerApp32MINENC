@@ -15,7 +15,7 @@ function deleteFile(req, res){
 
     let upload_keys = [];
 
-    if(Array.isArray(upload_key_is_array)){
+    if(Array.isArray(upload_key)){
 
         upload_keys = upload_key;
 
@@ -27,37 +27,41 @@ function deleteFile(req, res){
     
     let promises = [];
 
-    upload_keys.forEach(e=>{
+    upload_keys.forEach(el=>{
 
         //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all#promise.all_fail-fast_behavior
         
         //handling the fast-rejection with .catch(e=>e)
-        promises.push(deleteSinglFilePromise(e, tenant).catch(e=>e));
+        promises.push(deleteSinglFilePromise(el, tenant).catch(e=>e));
     });
 
-    let errors = [];
-    let error_messages = [];
-    let result_codes = [];
-    // errors.push(e.error);
-    // error_messages.push(e.error_message);
-    // result_codes.push(e.result_codes);
+    let response_array = [];
 
-    Promise.all(promises).then(()=>{
+    Promise.all(promises).then((result)=>{
 
-        if(errors.length){
+        result.forEach(({error, message, input, result_code})=>{
 
-            statics.sendError(res, errors, error_messages, result_codes);
+            if(error){
 
-        }else{
+                response_array.push({result_code, error, message, input});
 
-            statics.sendData(res, {}, statics.SUCCESS);
-        }
+            }else{
+
+                response_array.push({result_code, data:{}, input});
+            }
+
+        });
+
+        statics.sendResponseArray(res, response_array);
+
     });
 }
 
-async function deleteSinglFilePromise(upload_key, tenant){
+function deleteSinglFilePromise(upload_key, tenant){
 
     return new Promise((resolve, reject)=>{
+
+        let input = {upload_key, tenant};
 
         getUploadByUploadKey(upload_key, (err, data)=>{
 
@@ -81,28 +85,32 @@ async function deleteSinglFilePromise(upload_key, tenant){
                            
                             if(!err){
                             
-                                resolve();
+                                resolve({error: false, input, result_code:statics.SUCCESS});
                             
                             }else{
-    
-                                statics.sendError(res, err, "deleteFile->deletRowByUploadKey->couldn't delete the upload row from db");
-    
+                                
+                                reject({error:err, message:"deleteFile->deletRowByUploadKey->couldn't delete the upload row from db", 
+                                input, result_code:statics.SERVER_ERROR});
                             }
                         });
     
                     }).catch(e=>{
     
-                        statics.sendError(res, e, "deleteFile->removing file via ftp failed", statics.SERVER_ERROR);
+                        reject({error:e, message:"deleteFile->removing file via ftp failed", input, result_code:statics.SERVER_ERROR});
                     });
     
                 }else{
     
-                    statics.sendError(res, "1", "deleteFile->upload_obj not found. wrong tenant", statics.INVALID_TENANT);
+                    reject({error:"1", message:"deleteFile->upload_obj not found. wrong tenant", input, result_code:statics.INVALID_TENANT});
                 }
     
-            }else{
+            }else if(err){
     
-                statics.sendError(res, "1", "deleteFile->upload_obj not found. wrong upload_key", statics.INVALID_UPLOAD_KEY);
+                reject({error:err, message:"deleteFile->error on fetching the upload_obj", input, result_code:statics.SERVER_ERROR});
+
+            }else{
+
+                reject({error:"1", message:"deleteFile->upload_obj not found. wrong upload_key", input, result_code:statics.INVALID_UPLOAD_KEY});
             }
         });
     });
