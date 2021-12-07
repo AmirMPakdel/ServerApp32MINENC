@@ -11,26 +11,40 @@ const statics = {
     "UPLOAD_REJECT":5200,
     "SERVER_ERROR":5300,
 
+    mainServerStatics : {
+
+        "SUCCESS":1000,
+    },
+
     sendData,
     sendError,
     sendResponseArray,
     criticalInternalError,
 }
 
-
+/**
+ * @param {import("express").Response} res 
+ */
 function sendData(res, data, result_code) {
     
     if(!result_code){result_code = statics.SUCCESS}
 
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    
     res.json({
         result_code,
         data
     });
 }
 
+/**
+ * @param {import("express").Response} res 
+ */
 function sendError(res, error, message, result_code) {
 
     if(!result_code){result_code = statics.SERVER_ERROR}
+
+    res.setHeader("Access-Control-Allow-Origin", "*");
 
     res.json({
         result_code,
@@ -40,6 +54,8 @@ function sendError(res, error, message, result_code) {
 }
 
 function sendResponseArray(res, response_array){
+
+    res.setHeader("Access-Control-Allow-Origin", "*");
 
     res.json({
         result_code : statics.RESPONSE_ARRAY,

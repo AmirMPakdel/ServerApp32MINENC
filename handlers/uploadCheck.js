@@ -28,7 +28,7 @@ function uploadCheck(req, res){
 
             d1 = d1.data;
 
-            if(d1.result_code === statics.SUCCESS){
+            if(d1.result_code === statics.mainServerStatics.SUCCESS){
 
                 //TODO: check local diskspace
     
