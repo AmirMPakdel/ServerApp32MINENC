@@ -6,6 +6,7 @@ const getUploadObj = require('./handlers/getUploadObj');
 const Manager = require('./utils/manager');
 const moveToFtp = require('./handlers/moveToFtp');
 const deleteFile = require('./handlers/deleteFile');
+const cors = require("cors");
 
 const upload = multer({ dest: 'uploads/' });
 const app = express();
