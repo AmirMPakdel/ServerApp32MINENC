@@ -10,6 +10,13 @@ const deleteFile = require('./handlers/deleteFile');
 const upload = multer({ dest: 'uploads/' });
 const app = express();
 
+const corsOpts = {
+  origin: '*',
+  methods: ['GET','POST'],
+  allowedHeaders: ['Content-Type'],
+};
+
+app.use(cors(corsOpts));
 app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
