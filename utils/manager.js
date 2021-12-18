@@ -30,6 +30,8 @@ Manager.check = function(){
 
     fs.readdir(env.FTP_NRM_PATH, (err, files) => {
 
+        console.log("files in upload_ready->",files);
+
         if(!err){
 
             if(files.length){
@@ -59,9 +61,11 @@ Manager.handle = function(file_name){
 
     Manager.status = "working";
 
-    let name_array = file_name.split(".");
-    name_array.pop();
-    let upload_key = name_array.join(".");
+    //let name_array = file_name.split(".");
+    //name_array.pop();
+    //let upload_key = name_array.join(".");
+
+    let upload_key = file_name
 
     console.log(upload_key);
     
@@ -166,7 +170,7 @@ Manager.uploadExpire = function(){
 
                 files.forEach((fn)=>{
 
-                    let name = fn.split(".")[0];
+                    let name = fn;
 
                     Database.getUploadByUploadKey(name, (err1, result1)=>{
 
