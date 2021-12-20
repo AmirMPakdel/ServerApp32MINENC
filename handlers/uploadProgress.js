@@ -45,7 +45,8 @@ function uploadProgress(req, res){
                 }else{
 
                     //comparing the sizes
-                    if(row.size !== req.file.size){
+                    //TODO: disabled now ->if(row.size !== req.file.size){
+                    if(false){
 
                         deleteTempFile(req.file);
 
