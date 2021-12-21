@@ -90,13 +90,13 @@ function encryptor(enc_key, upload_key, id, file_type, cb){
     // id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d";
 
     //nii -> need id inject
-    encrypt_file(enc_key, "./ftp_normal/"+upload_key+"."+file_type, "./ftp_encrypted/"+upload_key+".nii", (err)=>{
+    encrypt_file(enc_key, "./ftp_normal/"+upload_key, "./ftp_encrypted/"+upload_key+".nii", (err)=>{
 
         if(!err){
             
-            injectId(id, "./ftp_encrypted/"+upload_key+".nii", "./ftp_encrypted/"+upload_key+"."+file_type, ()=>{
+            injectId(id, "./ftp_encrypted/"+upload_key+".nii", "./ftp_encrypted/"+upload_key, ()=>{
 
-                cb("./ftp_encrypted/"+upload_key+"."+file_type);
+                cb("./ftp_encrypted/"+upload_key);
             });
 
         }else{

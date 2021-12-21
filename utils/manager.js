@@ -67,7 +67,7 @@ Manager.handle = function(file_name){
 
     let upload_key = file_name
 
-    console.log(upload_key);
+    //console.log(upload_key);
     
     Database.getUploadByUploadKey(upload_key, (err, result)=>{
 
@@ -116,12 +116,12 @@ Manager.ftp = function(upload_row){
     //console.log("Manager->ftp");
 
     let upload_key = upload_row.upload_key;
-    let current_path = "./ftp_normal/"+upload_key+"."+upload_row.type;
+    let current_path = "./ftp_normal/"+upload_key;
     let distination_dir = "./public_html/course_media/"+upload_row.tenant+"/";
     let file_name = upload_key+"."+upload_row.type;
 
     if(upload_row.encrypt){
-        current_path = "./ftp_encrypted/"+upload_key+"."+upload_row.type;
+        current_path = "./ftp_encrypted/"+upload_key;
     }
 
     if(upload_row.public){
