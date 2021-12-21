@@ -30,13 +30,13 @@ Manager.check = function(){
 
     fs.readdir(env.FTP_NRM_PATH, (err, files) => {
 
-        console.log("files in upload_ready->",files);
+        //console.log("files in upload_ready->",files);
 
         if(!err){
 
             if(files.length){
 
-                console.log("Manager->check file name ->>>>>"+files[0]);
+                //console.log("Manager->check file name ->>>>>"+files[0]);
                 Manager.handle(files[0]);
 
             }else{
@@ -191,6 +191,10 @@ Manager.uploadExpire = function(){
                                             if(err3){
 
                                                 statics.criticalInternalError(err, "Manager->uploadExpire->deleting the upload obj from db failed");
+                                            
+                                            }else{
+
+                                                console.log("uploadExpire-> file has been deleted ->"+fn);
                                             }
                                         });
     
