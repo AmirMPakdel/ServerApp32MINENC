@@ -57,7 +57,7 @@ function injectId (id, input_path, output_path, cb){
 function encrypt_file(enc_key, input_path, output_path, cb) {
 
     let algo = "aes-128-cbc";
-    enc_key = "fT6GI9OnH8G9klNd";
+    //enc_key = "fT6GI9OnH8G9klNd";
     let iv = "ni85Gnj8LdOi92Fn";
     let cipher = crypto.createCipheriv(algo, enc_key, iv);
     let input = fs.createReadStream(input_path, {highWaterMark:8192});
