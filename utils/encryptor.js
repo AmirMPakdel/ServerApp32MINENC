@@ -2,10 +2,11 @@ const fs = require("fs");
 const crypto = require("crypto");
 const statics = require("../statics");
 
-function injectId (id, input_path, output_path, cb){
+function injectId (upload_key, input_path, output_path, cb){
 
     let zTemp = "";
-    let temp = id;
+    let temp = upload_key;
+    temp = "$$##$$##$$##$"+temp;
     
     for(let i=0; i<16; i++){
         zTemp+="####";
@@ -94,7 +95,7 @@ function encryptor(enc_key, upload_key, id, file_type, cb){
 
         if(!err){
             
-            injectId(id, "./ftp_encrypted/"+upload_key+".nii", "./ftp_encrypted/"+upload_key, ()=>{
+            injectId(upload_key, "./ftp_encrypted/"+upload_key+".nii", "./ftp_encrypted/"+upload_key, ()=>{
 
                 cb("./ftp_encrypted/"+upload_key);
             });
