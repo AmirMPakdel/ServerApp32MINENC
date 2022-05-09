@@ -71,7 +71,7 @@ Database.drop = function(cb){
             
         if (!err){
             console.log("Table droped!");
-            cb()
+            cb();
         }
 
     });

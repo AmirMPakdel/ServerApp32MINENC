@@ -55,6 +55,7 @@ function injectId (upload_key, input_path, output_path, cb){
     });
 }
 
+
 function encrypt_file(enc_key, input_path, output_path, cb) {
 
     let algo = "aes-128-cbc";
@@ -87,18 +88,21 @@ function encrypt_file(enc_key, input_path, output_path, cb) {
 
 function encryptor(enc_key, upload_key, id, file_type, cb){
 
-    //TODO: get real id
-    // id = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d";
-
     //nii -> need id inject
-    encrypt_file(enc_key, "./ftp_normal/"+upload_key, "./ftp_encrypted/"+upload_key+".nii", (err)=>{
+    encrypt_file(enc_key, "./ftp_normal/"+upload_key, "./ftp_encrypted/"+upload_key+".mnf", (err)=>{
 
         if(!err){
             
-            injectId(upload_key, "./ftp_encrypted/"+upload_key+".nii", "./ftp_encrypted/"+upload_key, ()=>{
+            /*  injectId will be disabled
+            *   we are changing the algorithm and we decided not to inject id
+            *   in the file and consider the user wont change the files name
+
+            injectId(upload_key, "./ftp_encrypted/"+upload_key+".mnf", "./ftp_encrypted/"+upload_key, ()=>{
 
                 cb("./ftp_encrypted/"+upload_key);
-            });
+            });*/
+
+            cb("./ftp_encrypted/"+upload_key);
 
         }else{
 
