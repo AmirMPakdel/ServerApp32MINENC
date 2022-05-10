@@ -2,59 +2,6 @@ const fs = require("fs");
 const crypto = require("crypto");
 const statics = require("../statics");
 
-function injectId (upload_key, input_path, output_path, cb){
-
-    let zTemp = "";
-    let temp = upload_key;
-    temp = "$$##$$##$$##$"+temp;
-    
-    for(let i=0; i<16; i++){
-        zTemp+="####";
-    }
-    
-    for(let i=0; i<4078; i++){
-        temp+="##";
-    }
-
-    let input_file = fs.createReadStream(input_path);
-
-    let output_file = fs.createWriteStream(output_path);
-
-    input_file.on("end", ()=>{
-
-        input_file.close();
-        //console.log("input_file on end");
-    });
-
-    input_file.on("close", ()=>{
-
-        //console.log("input_file on close");
-    });
-
-    output_file.on("finish", ()=>{
-        
-        output_file.close();
-    });
-
-    output_file.on("close", ()=>{
-
-        // deleting the nii file
-        fs.unlink(input_path, cb)
-    });
-    
-    output_file.write(temp, (err)=>{
-    
-        if(err){
-
-            statics.criticalInternalError(err, "output_file.write");
-
-        }else{
-
-            input_file.pipe(output_file);
-        }
-    });
-}
-
 
 function encrypt_file(enc_key, input_path, output_path, cb) {
 
@@ -107,6 +54,59 @@ function encryptor(enc_key, upload_key, id, file_type, cb){
         }else{
 
             statics.criticalInternalError(err, "handle encrypt error");
+        }
+    });
+}
+
+function injectId (upload_key, input_path, output_path, cb){
+
+    let zTemp = "";
+    let temp = upload_key;
+    temp = "$$##$$##$$##$"+temp;
+    
+    for(let i=0; i<16; i++){
+        zTemp+="####";
+    }
+    
+    for(let i=0; i<4078; i++){
+        temp+="##";
+    }
+
+    let input_file = fs.createReadStream(input_path);
+
+    let output_file = fs.createWriteStream(output_path);
+
+    input_file.on("end", ()=>{
+
+        input_file.close();
+        //console.log("input_file on end");
+    });
+
+    input_file.on("close", ()=>{
+
+        //console.log("input_file on close");
+    });
+
+    output_file.on("finish", ()=>{
+        
+        output_file.close();
+    });
+
+    output_file.on("close", ()=>{
+
+        // deleting the nii file
+        fs.unlink(input_path, cb)
+    });
+    
+    output_file.write(temp, (err)=>{
+    
+        if(err){
+
+            statics.criticalInternalError(err, "output_file.write");
+
+        }else{
+
+            input_file.pipe(output_file);
         }
     });
 }

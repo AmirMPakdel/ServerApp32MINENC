@@ -7,7 +7,7 @@ const encryptor = require("./encryptor");
 
 const Manager = {
 
-    status : "sleep",
+    status : "hibernate",
 
     /**@type {NodeJs.Timeout} */
     timeout : null,
@@ -46,7 +46,7 @@ Manager.check = function(){
 
         }else{
 
-            statics.criticalInternalError(err, "reading the FTP_READY_PATH dir failed")
+            statics.criticalInternalError(err, "reading the FTP_READY_PATH dir failed");
         }
     });
 }
@@ -65,7 +65,7 @@ Manager.handle = function(file_name){
     //name_array.pop();
     //let upload_key = name_array.join(".");
 
-    let upload_key = file_name
+    let upload_key = file_name;
 
     //console.log(upload_key);
     
@@ -88,7 +88,7 @@ Manager.handle = function(file_name){
 
             }else{
 
-                statics.criticalInternalError("", "Manager->file_name not match any upload key in db")
+                statics.criticalInternalError("", "Manager->file_name not match any upload key in db");
 
             }
 
