@@ -126,7 +126,7 @@ function movingPromise(upload_key, enc_key){
 
 function movingTheFile(row, cb) {
 
-    fs.rename("./upload_ready/"+row.upload_key, "./ftp_normal/"+row.upload_key, (err) => {
+    fs.rename(env.LOBBY_STAGE_DIR + row.upload_key, env.VERIFIED_STAGE_DIR + row.upload_key, (err) => {
 
         if(!err){
             

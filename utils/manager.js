@@ -5,238 +5,227 @@ const Database = require("./database");
 const { sendViaFTP } = require("./downloadhost");
 const encryptor = require("./encryptor");
 
-const Manager = {
+class Manager {
 
-    status : "hibernate",
+    constructor(config){
 
-    /**@type {NodeJs.Timeout} */
-    timeout : null,
-
-    init: ()=>{}
-}
-
-Manager.init = function(){
-    
-    //console.log("Manager->init");
-
-    Manager.check();
-
-    Manager.uploadExpire();
-}
-
-Manager.check = function(){
-
-    //console.log("Manager->check");
-
-    fs.readdir(env.FTP_NRM_PATH, (err, files) => {
-
-        //console.log("files in upload_ready->",files);
-
-        if(!err){
-
-            if(files.length){
-
-                //console.log("Manager->check file name ->>>>>"+files[0]);
-                Manager.handle(files[0]);
-
-            }else{
-
-                Manager.hibernate();
-            }
-
-        }else{
-
-            statics.criticalInternalError(err, "reading the FTP_READY_PATH dir failed");
+        if (!fs.existsSync("./uploads")){
+            fs.mkdirSync("./uploads");
         }
-    });
-}
+        if (!fs.existsSync(env.TEMP_STAGE_DIR)){
+            fs.mkdirSync(env.TEMP_STAGE_DIR);
+        }
+        if (!fs.existsSync(env.LOBBY_STAGE_DIR)){
+            fs.mkdirSync(env.LOBBY_STAGE_DIR);
+        }
+        if (!fs.existsSync(env.VERIFIED_STAGE_DIR)){
+            fs.mkdirSync(env.VERIFIED_STAGE_DIR);
+        }
 
-/**
- * 
- * @param {String} file_name 
- */
-Manager.handle = function(file_name){
+        this.MANAGER_CHECK_INTERVAL = config.MANAGER_CHECK_INTERVAL;
+        this.UPLOAD_EXPIRE_TIME = config.UPLOAD_EXPIRE_TIME;
+        this.MANAGER_UPLOAD_EXPIRE_INTERVAL = config.MANAGER_UPLOAD_EXPIRE_INTERVAL;
 
-    //console.log("Manager->handle");
+        this.status = "hibernate";
 
-    Manager.status = "working";
+        /**@type {NodeJs.Timeout} */
+        this.timeout = null;
+    }
 
-    //let name_array = file_name.split(".");
-    //name_array.pop();
-    //let upload_key = name_array.join(".");
+    init = ()=>{
 
-    let upload_key = file_name;
+        this.check();
+        this.uploadExpire();
+    }
 
-    //console.log(upload_key);
+    check = ()=>{
     
-    Database.getUploadByUploadKey(upload_key, (err, result)=>{
+        fs.readdir(env.LOBBY_STAGE_DIR, (err, files) => {
+    
+            if(!err){
+    
+                if(files.length){
+    
+                    this.handle(files[0]);
+    
+                }else{
+    
+                    this.hibernate();
+                }
+    
+            }else{
+    
+                statics.criticalInternalError(err, "reading the LOBBY_STAGE_DIR dir failed");
+            }
+        });
+    }
 
-        if(!err){
+    /**
+     * @param {String} file_name 
+     */
+    handle = (file_name)=>{
 
-            let row = result[0];
+        this.status = "working";
 
-            if(row){
+        let upload_key = file_name;
+        
+        Database.getUploadByUploadKey(upload_key, (err, result)=>{
 
-                if(row.encrypt){
+            if(!err){
 
-                    Manager.encrypt(row);
+                let row = result[0];
+
+                if(row){
+
+                    if(row.encrypt){
+
+                        this.encrypt(row);
+
+                    }else{
+                        
+                        this.ftp(row);
+                    }
 
                 }else{
-                    
-                    Manager.ftp(row);
+
+                    statics.criticalInternalError("", "Manager->file_name not match any upload key in db");
+
                 }
 
             }else{
 
-                statics.criticalInternalError("", "Manager->file_name not match any upload key in db");
-
+                statics.criticalInternalError(err, "Manager->db error");
             }
 
-        }else{
+        });
+    }
 
-            statics.criticalInternalError(err, "Manager->db error");
+    encrypt = (upload_row)=>{
+
+        encryptor(upload_row.enc_key, upload_row.upload_key, (output_path)=>{
+
+            this.ftp(upload_row);
+        });
+    }
+    
+    ftp = (upload_row)=>{
+
+        let upload_key = upload_row.upload_key;
+        let current_path = env.VERIFIED_STAGE_DIR + upload_key;
+        let distination_dir = "./public_html/course_media/"+upload_row.tenant+"/";
+        let file_name = upload_key+"."+upload_row.type;
+
+        // encryption folder has been deleted from algorithm
+        // if(upload_row.encrypt){
+        //     current_path = "./ftp_encrypted/"+upload_key;
+        // }
+
+        if(upload_row.public){
+            distination_dir = "./public_html/public_files/"+upload_row.tenant+"/";
         }
 
-    });
-}
+        sendViaFTP(current_path, distination_dir, file_name, upload_row.public).then(()=>{
 
-Manager.encrypt = function(upload_row){
+            fs.unlink(current_path, (err1)=>{
 
-    //console.log("Manager->encrypt");
+                if(!err1){
 
-    encryptor(upload_row.enc_key, upload_row.upload_key, upload_row.id, upload_row.type, (output_path)=>{
+                    Database.setFinishedStatus(upload_key, (err2, result)=>{
 
-        Manager.ftp(upload_row);
-    });
-}
-    
+                        if(err2){
 
-Manager.ftp = function(upload_row){
-
-    //console.log("Manager->ftp");
-
-    let upload_key = upload_row.upload_key;
-    let current_path = "./ftp_normal/"+upload_key;
-    let distination_dir = "./public_html/course_media/"+upload_row.tenant+"/";
-    let file_name = upload_key+"."+upload_row.type;
-
-    if(upload_row.encrypt){
-        current_path = "./ftp_encrypted/"+upload_key;
-    }
-
-    if(upload_row.public){
-        distination_dir = "./public_html/public_files/"+upload_row.tenant+"/";
-    }
-
-    sendViaFTP(current_path, distination_dir, file_name, upload_row.public).then(()=>{
-
-        fs.unlink(current_path, (err1)=>{
-
-            if(!err1){
-
-                Database.setFinishedStatus(upload_key, (err2, result)=>{
-
-                    if(err2){
-
-                        statics.criticalInternalError(err2, "Manager->setting the finish status failed");
-                    }
-                });
-
-                Manager.check();
-
-            }else{
-
-                statics.criticalInternalError(err1, "Manager->deleting temp file failed");
-            }
-            
-        });
-
-    }).catch((err)=>{
-
-        statics.criticalInternalError(err, "Manager->sendViaFTP failed");
-    });
-
-}
-
-Manager.uploadExpire = function(){
-
-    setInterval(()=>{
-
-        //console.log("uploadExpire check");
-
-        fs.readdir(env.UPLOAD_READY_PATH, (err, files) => {
-
-            if(!err){
-
-                files.forEach((fn)=>{
-
-                    let name = fn;
-
-                    Database.getUploadByUploadKey(name, (err1, result1)=>{
-
-                        if(!err1 && result1[0]){
-
-                            
-                            if((Date.now() - new Date(result1[0].updated_at).getTime()) > env.UPLOAD_EXPIRE_TIME){
-
-                                //console.log("uploadExpire 1");
-
-                                //delete the row and the file
-                                fs.unlink(env.UPLOAD_READY_PATH + fn, (err2)=>{
-
-                                    if(!err2){
-
-                                        Database.deletRowByUploadKey(name, (err3, result3)=>{
-                                            
-                                            if(err3){
-
-                                                statics.criticalInternalError(err, "Manager->uploadExpire->deleting the upload obj from db failed");
-                                            
-                                            }else{
-
-                                                console.log("uploadExpire-> file has been deleted ->"+fn);
-                                            }
-                                        });
-    
-                                    }else{
-    
-                                        statics.criticalInternalError(err2, "Manager->uploadExpire-> deleting the temp file failed");
-                                    }
-                                });
-                            }
-
-                        }else{
-
-                            statics.criticalInternalError(err, "Manager->uploadExpire-> getting upload obj failed");
+                            statics.criticalInternalError(err2, "Manager->setting the finish status failed");
                         }
                     });
-                });
-    
-            }else{
 
-                statics.criticalInternalError(err, "Manager->uploadExpire-> reading FTP_NRM_PATH dir failed");
-            }
+                    Manager.check();
+
+                }else{
+
+                    statics.criticalInternalError(err1, "Manager->deleting temp file failed");
+                }
+                
+            });
+
+        }).catch((err)=>{
+
+            statics.criticalInternalError(err, "Manager->sendViaFTP failed");
         });
 
+    }
 
-    }, env.MANAGER_UPLOAD_EXPIRE_INTERVAL);
-}
+    uploadExpire = ()=>{
 
-Manager.hibernate = function(){
+        setInterval(()=>{
 
-    Manager.status = "hibernate";
+            fs.readdir(env.UPLOAD_READY_PATH, (err, files) => {
 
-    //console.log("Manager->hibernate");
+                if(!err){
 
-    clearTimeout(Manager.timeout);
+                    files.forEach((fn)=>{
 
-    Manager.timeout = setTimeout(()=>{
+                        let name = fn;
 
-       Manager.check();
+                        Database.getUploadByUploadKey(name, (err1, result1)=>{
+
+                            if(!err1 && result1[0]){
+
+                                
+                                if((Date.now() - new Date(result1[0].updated_at).getTime()) > this.UPLOAD_EXPIRE_TIME){
+
+                                    //delete the row and the file
+                                    fs.unlink(env.LOBBY_STAGE_DIR + fn, (err2)=>{
+
+                                        if(!err2){
+
+                                            Database.deletRowByUploadKey(name, (err3, result3)=>{
+                                                
+                                                if(err3){
+
+                                                    statics.criticalInternalError(err, "Manager->uploadExpire->deleting the upload obj from db failed");
+                                                
+                                                }else{
+
+                                                    console.log("uploadExpire-> file has been deleted ->"+fn);
+                                                }
+                                            });
         
-    },5000);
+                                        }else{
+        
+                                            statics.criticalInternalError(err2, "Manager->uploadExpire-> deleting the temp file failed");
+                                        }
+                                    });
+                                }
+
+                            }else{
+
+                                statics.criticalInternalError(err, "Manager->uploadExpire-> getting upload obj failed");
+                            }
+                        });
+                    });
+        
+                }else{
+
+                    statics.criticalInternalError(err, "Manager->uploadExpire-> reading FTP_NRM_PATH dir failed");
+                }
+            });
+
+
+        }, this.MANAGER_UPLOAD_EXPIRE_INTERVAL);
+    }
+
+    hibernate = ()=>{
+
+        this.status = "hibernate";
+
+        clearTimeout(this.timeout);
+
+        this.timeout = setTimeout(()=>{
+
+            this.check();
+            
+        }, this.MANAGER_CHECK_INTERVAL);
+    }
 }
-
-
 
 module.exports = Manager;

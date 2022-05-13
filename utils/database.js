@@ -32,7 +32,6 @@ Database.connection = mysql.createConnection({
 
 Database.connection.connect(function(err) {
     if (err) throw err;
-    console.log("mysql connected!");
 });
 
 Database.init = function(){

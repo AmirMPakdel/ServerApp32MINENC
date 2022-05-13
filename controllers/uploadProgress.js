@@ -54,7 +54,7 @@ function uploadProgress(req, res){
 
                     }else{
 
-                        fs.rename("./uploads/"+req.file.filename, env.UPLOAD_READY_PATH+upload_key, (err2) => {
+                        fs.rename(env.TEMP_STAGE_DIR + req.file.filename, env.LOBBY_STAGE_DIR + upload_key, (err2) => {
 
                             if (err2){
 
@@ -81,7 +81,7 @@ function uploadProgress(req, res){
 
 function deleteTempFile(file, cb){
 
-    fs.unlink("./uploads/"+file.filename, (err)=>{
+    fs.unlink(env.TEMP_STAGE_DIR + file.filename, (err)=>{
         if(!err){
             if(cb)cb();
         }else{

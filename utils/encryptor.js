@@ -1,12 +1,12 @@
 const fs = require("fs");
 const crypto = require("crypto");
 const statics = require("../statics");
+const env = require("../env");
 
 
 function encrypt_file(enc_key, input_path, output_path, cb) {
 
     let algo = "aes-128-cbc";
-    //enc_key = "fT6GI9OnH8G9klNd";
     let iv = "ni85Gnj8LdOi92Fn";
     let cipher = crypto.createCipheriv(algo, enc_key, iv);
     let input = fs.createReadStream(input_path, {highWaterMark:8192});
@@ -33,24 +33,24 @@ function encrypt_file(enc_key, input_path, output_path, cb) {
     });
 }
 
-function encryptor(enc_key, upload_key, id, file_type, cb){
+function encryptor(enc_key, upload_key, cb){
 
-    //nii -> need id inject
-    encrypt_file(enc_key, "./ftp_normal/"+upload_key, "./ftp_encrypted/"+upload_key+".mnf", (err)=>{
+    encrypt_file(enc_key, env.VERIFIED_STAGE_DIR + upload_key, env.VERIFIED_STAGE_DIR + upload_key + ".mnf", (err)=>{
 
         if(!err){
+
+            fs.rename(env.VERIFIED_STAGE_DIR + upload_key + ".mnf", env.VERIFIED_STAGE_DIR + upload_key, (err)=>{
+
+                if(!err){
+
+                    cb(env.VERIFIED_STAGE_DIR + upload_key);
+                
+                }else{
+
+                    statics.criticalInternalError(err, "renaming <upload_key>.mnf to <upload_key>");
+                }
+            });
             
-            /*  injectId will be disabled
-            *   we are changing the algorithm and we decided not to inject id
-            *   in the file and consider the user wont change the files name
-
-            injectId(upload_key, "./ftp_encrypted/"+upload_key+".mnf", "./ftp_encrypted/"+upload_key, ()=>{
-
-                cb("./ftp_encrypted/"+upload_key);
-            });*/
-
-            cb("./ftp_encrypted/"+upload_key);
-
         }else{
 
             statics.criticalInternalError(err, "handle encrypt error");
