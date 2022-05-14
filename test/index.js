@@ -25,10 +25,10 @@ function runServers(cb){
     let response = {
         result_code: statics.mainServerStatics.SUCCESS,
         data: {
-          file_type: "mp4",
-          file_size: 1428135,
-          is_encrypted: 1,
-          is_public: 0,
+          file_type: "jpg",
+          file_size: 94540,
+          is_encrypted: 0,
+          is_public: 1,
         },
     };
 
@@ -46,7 +46,7 @@ function run(){
     let tenant = "convtest";
     let token = "24b9e2d9abc123448f2d5cd56";
     let upload_key = "85484e2d5c1c6473248a846f8f8d8e4-a01-5";
-    let file_path = "./test.mp4";
+    let file_path = "./test.jpg";
     
 
     let uploadCheck_config = {

@@ -25,6 +25,7 @@ class Manager {
         this.MANAGER_CHECK_INTERVAL = config.MANAGER_CHECK_INTERVAL;
         this.UPLOAD_EXPIRE_TIME = config.UPLOAD_EXPIRE_TIME;
         this.MANAGER_UPLOAD_EXPIRE_INTERVAL = config.MANAGER_UPLOAD_EXPIRE_INTERVAL;
+        this.FTP_DISABLED_TEST_MODE = config.FTP_DISABLED_TEST_MODE;
 
         this.status = "hibernate";
 
@@ -49,7 +50,7 @@ class Manager {
                     this.handle(files[0]);
     
                 }else{
-                    console.log("hibernate");
+
                     this.hibernate();
                 }
     
@@ -83,8 +84,7 @@ class Manager {
 
                     }else{
                         
-                        console.log("MOVING TO FTP");
-                        //this.ftp(row);
+                        this.ftp(row);
                     }
 
                 }else{
@@ -105,8 +105,7 @@ class Manager {
 
         encryptor(upload_row.enc_key, upload_row.upload_key, (output_path)=>{
 
-            console.log("MOVING TO FTP");
-            //this.ftp(upload_row);
+            this.ftp(upload_row);
         });
     }
     
@@ -117,19 +116,48 @@ class Manager {
         let distination_dir = "./public_html/course_media/"+upload_row.tenant+"/";
         let file_name = upload_key+"."+upload_row.type;
 
-        // encryption folder has been deleted from algorithm
-        // if(upload_row.encrypt){
-        //     current_path = "./ftp_encrypted/"+upload_key;
-        // }
-
         if(upload_row.public){
             distination_dir = "./public_html/public_files/"+upload_row.tenant+"/";
         }
 
-        sendViaFTP(current_path, distination_dir, file_name, upload_row.public).then(()=>{
+        // set FTP_DISABLED_TEST_MODE to true if you don't have access to ftp server
+        if(!this.FTP_DISABLED_TEST_MODE){
+
+            sendViaFTP(current_path, distination_dir, file_name, upload_row.public).then(()=>{
+
+                fs.unlink(current_path, (err1)=>{
+    
+                    if(!err1){
+    
+                        Database.setFinishedStatus(upload_key, (err2, result)=>{
+    
+                            if(err2){
+    
+                                statics.criticalInternalError(err2, "Manager->setting the finish status failed");
+                            }
+                        });
+    
+                        this.check();
+    
+                    }else{
+    
+                        statics.criticalInternalError(err1, "Manager->deleting temp file failed");
+                    }
+                    
+                });
+    
+            }).catch((err)=>{
+    
+                statics.criticalInternalError(err, "Manager->sendViaFTP failed");
+            });
+
+        }else{
+
+            console.log("FTP_DISABLED_TEST_MODE->consider the file has been sent via ftp");
+            console.log("ftp destination : "+distination_dir);
 
             fs.unlink(current_path, (err1)=>{
-
+    
                 if(!err1){
 
                     Database.setFinishedStatus(upload_key, (err2, result)=>{
@@ -140,7 +168,7 @@ class Manager {
                         }
                     });
 
-                    Manager.check();
+                    this.check();
 
                 }else{
 
@@ -148,12 +176,7 @@ class Manager {
                 }
                 
             });
-
-        }).catch((err)=>{
-
-            statics.criticalInternalError(err, "Manager->sendViaFTP failed");
-        });
-
+        }
     }
 
     uploadExpire = ()=>{
