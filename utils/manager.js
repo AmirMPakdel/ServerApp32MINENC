@@ -40,7 +40,7 @@ class Manager {
 
     check = ()=>{
     
-        fs.readdir(env.LOBBY_STAGE_DIR, (err, files) => {
+        fs.readdir(env.VERIFIED_STAGE_DIR, (err, files) => {
     
             if(!err){
     
@@ -49,13 +49,13 @@ class Manager {
                     this.handle(files[0]);
     
                 }else{
-    
+                    console.log("hibernate");
                     this.hibernate();
                 }
     
             }else{
     
-                statics.criticalInternalError(err, "reading the LOBBY_STAGE_DIR dir failed");
+                statics.criticalInternalError(err, "reading the VERIFIED_STAGE_DIR dir failed");
             }
         });
     }
@@ -83,7 +83,8 @@ class Manager {
 
                     }else{
                         
-                        this.ftp(row);
+                        console.log("MOVING TO FTP");
+                        //this.ftp(row);
                     }
 
                 }else{
@@ -104,7 +105,8 @@ class Manager {
 
         encryptor(upload_row.enc_key, upload_row.upload_key, (output_path)=>{
 
-            this.ftp(upload_row);
+            console.log("MOVING TO FTP");
+            //this.ftp(upload_row);
         });
     }
     

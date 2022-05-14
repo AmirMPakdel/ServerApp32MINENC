@@ -34,18 +34,18 @@ Database.connection.connect(function(err) {
     if (err) throw err;
 });
 
-Database.init = function(){
+Database.init = function(cb){
 
     Database.connection.query("CREATE DATABASE convertor", function (err, result) {
         
         if (!err) console.log("Database created");
 
-        Database.createTable();
+        Database.createTable(cb);
         
     });
 }
 
-Database.createTable = function(){
+Database.createTable = function(cb){
 
     let sql = "CREATE TABLE uploads (id INT AUTO_INCREMENT PRIMARY KEY, tenant VARCHAR(64), upload_key VARCHAR(64), "+
     "size BIGINT, type VARCHAR(16), encrypt BOOLEAN, status VARCHAR(16), size_enc BIGINT, "+ 
@@ -56,6 +56,7 @@ Database.createTable = function(){
             
             if (!err){
                 console.log("Table created");
+                if(cb)cb();
             }else{
                 console.log(err);
             }
@@ -70,9 +71,10 @@ Database.drop = function(cb){
             
         if (!err){
             console.log("Table droped!");
-            cb();
+            if(cb)cb();
+        }else{
+            console.log(err);
         }
-
     });
 }
 

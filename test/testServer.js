@@ -30,9 +30,6 @@ const manager_config = {
   MANAGER_UPLOAD_EXPIRE_INTERVAL: 640 * 1000,
 }
 
-const manager = new Manager(manager_config);
-manager.init();
-
 app.get("/test", (req,res)=>{res.send("Hello World")});
 
 app.post('/upload_check', uploadCheck);
@@ -47,10 +44,15 @@ app.post('/delete_file', deleteFile);
 
 
 function run(cb){
+
+  const manager = new Manager(manager_config);
+  manager.init();
+
   app.listen(port, () => {
     console.log(`test server listening on port ${port}`);
     cb();
   });
+
 }
 
 module.exports = {run};

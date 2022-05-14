@@ -1,6 +1,7 @@
 const Database = require("../utils/database");
 const fs = require('fs');
 const statics = require("../statics");
+const env = require("../env");
 
 /**
  * @param {import("express").Request} req 

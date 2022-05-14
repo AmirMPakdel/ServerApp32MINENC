@@ -6,9 +6,18 @@ const fs = require('fs');
 const mockServer = require("./mockServer");
 const testServer = require("./testServer");
 const statics = require('../statics');
+const Database = require('../utils/database');
 
-runServers(()=>{
-    run();
+
+Database.drop(()=>{
+
+    Database.createTable(()=>{
+
+        runServers(()=>{
+            
+            run();
+        });
+    });
 });
 
 function runServers(cb){
@@ -62,8 +71,34 @@ function run(){
 
             uploadProgress(uploadProgress_config, (err2, res2)=>{
 
+                if(!err2 && res2.result_code == 5000){
 
-                
+                    let moveToFtp_config = {
+                        upload_key,
+                        enc_key: "jhgu58io98fy47u3",
+                        tenant,
+                    }
+
+                    moveToFtp(moveToFtp_config, (err3, res3)=>{
+
+                        if(!err3, res3.result_code == 5005){
+
+                            
+                            let responses3 = res3.responses;
+                            let res3_is_ok = responses3.length?true:false;
+
+                            responses3.forEach((res3_1)=>{
+                                if(res3_1.result_code !== 5000){
+                                    res3_is_ok = false;
+                                }
+                            });
+
+                            if(res3_is_ok){
+                                console.log("Done!");
+                            }
+                        }
+                    });
+                }
             });
         }
     });
