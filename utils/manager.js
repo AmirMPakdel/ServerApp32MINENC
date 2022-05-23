@@ -123,7 +123,7 @@ class Manager {
         // set FTP_DISABLED_TEST_MODE to true if you don't have access to ftp server
         if(!this.FTP_DISABLED_TEST_MODE){
 
-            sendViaFTP(current_path, distination_dir, file_name, upload_row.public).then(()=>{
+            sendViaFTP(current_path, distination_dir, file_name, upload_row.free).then(()=>{
 
                 fs.unlink(current_path, (err1)=>{
     

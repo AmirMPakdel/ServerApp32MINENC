@@ -40,8 +40,11 @@ function uploadCheck(req, res){
                     file_size,
                     is_encrypted,
                     is_public,
+                    upload_type,
 
                 } = d1.data;
+
+                let free = UploadType2Free(upload_type);
     
                 Database.saveUploadInfo(
                     {
@@ -51,6 +54,7 @@ function uploadCheck(req, res){
                         type: file_type,
                         encrypt: is_encrypted,
                         public: is_public,
+                        free,
                     },
                     (err, result)=>{
     
@@ -85,6 +89,25 @@ function uploadCheck(req, res){
 
         }
     })
+}
+
+const UploadType2Free = (upload_type)=>{
+
+    let not_free_upload_types = [
+        "ut_course_video",
+        "ut_course_voice",
+        "ut_course_document",
+    ]
+
+    let free = true;
+
+    not_free_upload_types.forEach(e=>{
+        if(e === upload_type){
+            free = false;
+        }
+    });
+
+    return free;
 }
 
 module.exports = uploadCheck;

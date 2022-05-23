@@ -49,7 +49,7 @@ Database.createTable = function(cb){
 
     let sql = "CREATE TABLE uploads (id INT AUTO_INCREMENT PRIMARY KEY, tenant VARCHAR(64), upload_key VARCHAR(64), "+
     "size BIGINT, type VARCHAR(16), encrypt BOOLEAN, status VARCHAR(16), size_enc BIGINT, "+ 
-    "public BOOLEAN, enc_key VARCHAR(16), created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "+
+    "public BOOLEAN, free BOOLEAN, enc_key VARCHAR(16), created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "+
     "updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)";
         
         Database.connection.query(sql, function (err, result) {
@@ -88,16 +88,15 @@ Database.saveUploadInfo = function(data, cb){
         type,
         encrypt,
         public,
+        free,
         tenant,
-
     } = data;
 
-    let qr = `INSERT INTO uploads (upload_key, size, type, public, status, encrypt, tenant) VALUES ('${upload_key}', '${size}', '${type}',${public}, 'verified', ${encrypt}, '${tenant}')`;
+    let qr = `INSERT INTO uploads (upload_key, size, type, public, free, status, encrypt, tenant) VALUES ('${upload_key}', '${size}', '${type}', ${public}, ${free}, 'verified', ${encrypt}, '${tenant}')`;
 
     Database.connection.query(qr, function (err, result) {
         
         cb(err, result);
-        
     });
 }
 

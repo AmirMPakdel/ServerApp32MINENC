@@ -2,7 +2,7 @@ const ftp = require("basic-ftp");
 const env = require("../env");
 const statics = require("../statics");
 
-async function sendViaFTP(source_path, distination_dir, file_name, public){
+async function sendViaFTP(source_path, distination_dir, file_name, free){
 
     const client = new ftp.Client()
 
@@ -24,7 +24,7 @@ async function sendViaFTP(source_path, distination_dir, file_name, public){
         await client.uploadFrom(source_path, file_name);
 
         // if its not for public use then set access control
-        if(!public){
+        if(!free){
             await client.send("SITE CHMOD 640 ./"+file_name, false);
         }
 
