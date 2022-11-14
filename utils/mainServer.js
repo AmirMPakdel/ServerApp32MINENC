@@ -14,7 +14,7 @@ function uploadKeyCheck(req, res, cb){
         course_id: b.course_id, //(nullable)
     }
 
-    axios.post("http://localhost:8000/api/tenant/user/upload/verify", p, {headers:{
+    axios.post("http://minfo.ir/api/tenant/user/upload/verify", p, {headers:{
 
         "X-TENANT":b.tenant
 
